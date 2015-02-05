@@ -59,7 +59,7 @@ int main (int argc, char **argv)
     	ErrorMsg ("Usage %s [-b] data_file\n", argv[0]);
   	}
 
-  	else if ((argc == 3) && (!strcmp(argv[1], "-b")))
+  	else if ((argc == 3) && (!strcmp(argv[1], "-b"))) //Compares the C string str1 to the C string str2.
   	{
     	datFileName = argv[2];
     	Sim.modeError = ERR_BATCH;
@@ -298,7 +298,7 @@ void GeometryInit (void)
 	char *typeMsg;
 	int typeVal;
 
-	if (!InRange(Geometry.nodesI, 0, Geometry.iZones, 1, MAX_I))
+	if (!InRange(Geometry.nodesI, 0, Geometry.iZones, 1, MAX_I)) //InRange (int *array, int iStart, int iStop, int vMin, int vMax)
     	ErrorMsg("NODES_I out of range, or not specified");
 
     if (!InRange(Geometry.nodesJ, 0, Geometry.jZones, 1, MAX_J))
