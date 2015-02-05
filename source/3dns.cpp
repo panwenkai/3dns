@@ -18,7 +18,7 @@
 // |	  v2.8	  J.Leonard						02-15-99
 // |	  v3.0	  J.Leonard / Visual C++6, 3D	07-28-99
 // |	  v3.7    J.Leonard						11-14-01
-// |
+// |	  v4.0    W.Pan
 // |    (C) 1995-99      Columbia University, MSME
 // |    (C) 2000-01	Harvard University, DEAS
 // |_____________________________________________________
