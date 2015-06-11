@@ -317,8 +317,8 @@ void NucleationInit()
 	randT1 = new double[RAND_MAX+2];
 	randT0 = new double[RAND_MAX+2];
 
-	if ((randT3 == NULL) || (randT3 == NULL) ||
-			(randT3 == NULL) || (randT3 == NULL) )
+	if ((randT3 == NULL) || (randT2 == NULL) ||
+			(randT1 == NULL) || (randT0 == NULL) )
 		ErrorMsg("Out of memory");
 
 	const double R3 = 1.0 / (double)(RAND_MAX+1);
