@@ -299,6 +299,17 @@ int LoadMaterialFile(string &fileName, int regionNum)
 	  		GenTable(entry.value, &(thisPhase->homNucleation), MIN_DEGREES, MAX_DEGREES, 1.0);
         }
 
+		else if( entry.keyWord == "NUCLEATION_HET_LIQUID" )
+	  	{
+			ParseLine(entry, T_CONST | T_FUNCTION | T_RPN | T_MATRIX2D, NULL, VAL_ANY, Report.pathSearch);
+	  		GenTable(entry.value, &(thisPhase->hetNucleationLiquid), MIN_DEGREES, MAX_DEGREES, 1.0);
+       	}
+
+      	else if( entry.keyWord == "NUCLEATION_HOM_LIQUID" )
+	 	{
+            ParseLine(entry, T_CONST | T_FUNCTION | T_RPN | T_MATRIX2D, NULL, VAL_ANY, Report.pathSearch);
+	  		GenTable(entry.value, &(thisPhase->homNucleationLiquid), MIN_DEGREES, MAX_DEGREES, 1.0);
+        }
       	else if( entry.keyWord == "THERMAL_CONDUCTIVITY" )
 	  	{
             ParseLine(entry, T_CONST | T_FUNCTION | T_RPN | T_MATRIX2D, NULL, VAL_ANY, Report.pathSearch);
@@ -476,6 +487,18 @@ void LoadOverlayBlock(FILEINFO &fInfo, ENTRY &entry, int regionNum)
 			entry.value.Load(&(thisRegion->thresholdHom) );
         }
 
+		else if( entry.keyWord == "OVERLAY_HET_THRESHOLD_LIQUID" )
+		{
+            ParseLine(entry, T_FLOAT, 1, VAL_NON_NEGATIVE | VAL_FLAG_INFINITY, NO_PATH);
+			entry.value.Load(&(thisRegion->thresholdHetLiquid) );
+        }
+
+        else if( entry.keyWord == "OVERLAY_HOM_THRESHOLD_LIQUID" )
+        {
+            ParseLine(entry, T_FLOAT, 1, VAL_NON_NEGATIVE | VAL_FLAG_INFINITY, NO_PATH);
+			entry.value.Load(&(thisRegion->thresholdHomLiquid) );
+        }
+
       	else if( entry.keyWord == "OVERLAY_MATERIAL" )
 		{
 			string temp;
@@ -650,6 +673,38 @@ void LoadParametersFile(string &datFileName)
 			{
 				thisRegion = RegionNew(i);
 				thisRegion->thresholdHom = temp[i]; 
+			} //endloop 
+
+			delete [] temp;
+        }
+
+		else if( entry.keyWord == "LAYER_HET_THRESHOLD_LIQUID" )
+        {
+            double *temp;
+			
+			ParseLine(entry, T_FLOAT, &(Geometry.jZones), VAL_NON_NEGATIVE | VAL_FLAG_INFINITY, NO_PATH);
+			entry.value.Load(&temp);
+
+			for (i=LAYER_FIRST; i<LAYER_LAST; i++)	//distribute info to regions
+			{
+				thisRegion = RegionNew(i);
+				thisRegion->thresholdHetLiquid = temp[i]; 
+			} //endloop 
+
+			delete [] temp;
+        }
+
+      	else if( entry.keyWord == "LAYER_HOM_THRESHOLD_LIQUID" )
+        {
+            double *temp;
+			
+			ParseLine(entry, T_FLOAT, &(Geometry.jZones), VAL_NON_NEGATIVE | VAL_FLAG_INFINITY, NO_PATH);
+			entry.value.Load(&temp);
+
+			for (i=LAYER_FIRST; i<LAYER_LAST; i++)	//distribute info to regions
+			{
+				thisRegion = RegionNew(i);
+				thisRegion->thresholdHomLiquid = temp[i]; 
 			} //endloop 
 
 			delete [] temp;

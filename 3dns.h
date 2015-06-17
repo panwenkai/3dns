@@ -217,8 +217,10 @@ typedef struct
     
     double *enthalpyH;   	//lookup table heat of fusion
     double *heatCapacity;	//lookup table [MAX_DEGREES]
-    double *hetNucleation;	//heterogeneous nucleation
-    double *homNucleation;	//homogeneous nucleation
+    double *hetNucleation;	//heterogeneous nucleation to solid
+    double *homNucleation;	//homogeneous nucleation to solid
+	double *hetNucleationLiquid;  //heterogeneous nucleation to liquid
+	double *homNucleationLiquid;  //homogeneous nucleation to liquid
     double *indexN;
     double *indexK;
     double *interfaceResponse;	//lookup table
@@ -248,9 +250,13 @@ typedef struct
     bool catalyzeMelting;	//true if it can catalyze melting in neighboring regions
     bool canHetNucleate;
     bool canHomNucleate;
+	bool canHetNucleateLiquid;
+	bool canHomNucleateLiquid;
 
-	double thresholdHet;	//heterogeneous nucleation threshold
-    double thresholdHom;	//homogeneous nucleation threshold
+	double thresholdHet;	//heterogeneous nucleation threshold to solid
+    double thresholdHom;	//homogeneous nucleation threshold to solid
+	double thresholdHetLiquid;	//heterogeneous nucleation threshold to liquid
+    double thresholdHomLiquid;	//homogeneous nucleation threshold to liquid
 } REGION;
 
 typedef struct			// Reporting information

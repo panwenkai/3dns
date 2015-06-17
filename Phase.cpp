@@ -6,7 +6,7 @@
 // |   (C) 1998-99  Columbia University, MSME
 // |   (C) 2000-01	Harvard University, DEAS
 // |__________________________________________________________
-
+#include <iostream>
 #include "3dns.h"
 #include "nucleation.h"
 #include "parsefunc.h"		       //for LOOK_UP
@@ -354,6 +354,7 @@ void InterNode()
 				{
 					for (bz = MAX_BZ-1, dir=0; bz >= 0; bz--)	//combine all zone contributions
 					{
+						//std::cout << "dir = " << dir << std::endl;
 						dir &= Interface.dirKeep[bz][A(slushDir[bz])];	//clear some lesser zone bits
 						dir |= A(slushDir[bz]);		//add directions from this zone
 					}; //endloop bz

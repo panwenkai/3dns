@@ -23,8 +23,10 @@ bool RandomCheck(double meanNum);
 //___________________________________
 // Private variables
 //___________________________________
-DMATRIX thresholdHom;	  //nucleation threshold for heterogeneous nucleation
-DMATRIX thresholdHet;     //nucleation threshold for homogeneous nucleation
+DMATRIX thresholdHom;	  //nucleation threshold for heterogeneous nucleation to solid
+DMATRIX thresholdHet;     //nucleation threshold for homogeneous nucleation to solid
+DMATRIX thresholdHomLiquid;	  //nucleation threshold for heterogeneous nucleation to liquid
+DMATRIX thresholdHetLiquid;     //nucleation threshold for homogeneous nucleation to liquid
 double *randT3, *randT2, *randT1, *randT0;  //pre-calculated random values
 
 
@@ -205,12 +207,18 @@ void NucleationCleanup()
   	MatrixFree(CatalyzeMelting);
   	MatrixFree(DensityHetNuc);
     MatrixFree(DensityHomNuc);
+	MatrixFree(DensityHetNucLiquid);
+    MatrixFree(DensityHomNucLiquid);
 
   	MatrixFree(CanHetNucleate);
   	MatrixFree(CanHomNucleate);
+	MatrixFree(CanHetNucleateLiquid);
+  	MatrixFree(CanHomNucleateLiquid);
 
 	MatrixFree(thresholdHet);
 	MatrixFree(thresholdHom);
+	MatrixFree(thresholdHetLiquid);
+	MatrixFree(thresholdHomLiquid);
 }; //endfunc
 
 
@@ -230,10 +238,16 @@ void NucleationInit()
 
   	MatrixNew(&CanHetNucleate);
   	MatrixNew(&CanHomNucleate);
+	MatrixNew(&CanHetNucleateLiquid);
+  	MatrixNew(&CanHomNucleateLiquid);
   	MatrixNew(&thresholdHet);
     MatrixNew(&thresholdHom);
+	MatrixNew(&thresholdHetLiquid);
+    MatrixNew(&thresholdHomLiquid);
   	MatrixZero(MatrixNew(&DensityHetNuc));
   	MatrixZero(MatrixNew(&DensityHomNuc));
+	MatrixZero(MatrixNew(&DensityHetNucLiquid));
+  	MatrixZero(MatrixNew(&DensityHomNucLiquid));
 
 	//_________ CHECK REGION INFORMATION _______________
 	for (r=0; r<Geometry.numberRegions; r++)
@@ -246,12 +260,20 @@ void NucleationInit()
 			if (!InRange (Region[r]->thresholdHet, (double)0.0, 1.001 * DOUBLE_INFINITY))
     			ErrorMsg ("HET_THRESHOLD out of range in %s %d", typeMsg, typeVal);
 
+			if (!InRange (Region[r]->thresholdHetLiquid, (double)0.0, 1.001 * DOUBLE_INFINITY))
+    			ErrorMsg ("HET_THRESHOLD_LIQUID out of range in %s %d", typeMsg, typeVal);
+
 			if (!InRange (Region[r]->thresholdHom, (double)0.0, 1.001 * DOUBLE_INFINITY))
     			ErrorMsg ("HOM_THRESHOLD out of range in %s %d", typeMsg, typeVal);
 
+			if (!InRange (Region[r]->thresholdHomLiquid, (double)0.0, 1.001 * DOUBLE_INFINITY))
+    			ErrorMsg ("HOM_THRESHOLD_LIQUID out of range in %s %d", typeMsg, typeVal);
+
 								//must have finite thresholds to nucleate
 			Region[r]->canHetNucleate = (Region[r]->thresholdHet < DOUBLE_INFINITY);
-			Region[r]->canHomNucleate = (Region[r]->thresholdHom < DOUBLE_INFINITY);			
+			Region[r]->canHomNucleate = (Region[r]->thresholdHom < DOUBLE_INFINITY);
+			Region[r]->canHetNucleateLiquid = (Region[r]->thresholdHetLiquid < DOUBLE_INFINITY);
+			Region[r]->canHomNucleateLiquid = (Region[r]->thresholdHomLiquid < DOUBLE_INFINITY);
 
 			for (p=0; p < Phase[Region[r]->phaseLiquid]->numTransitions; p++)
 			{
@@ -263,13 +285,27 @@ void NucleationInit()
 						ErrorMsg("NUCLEATION_HET not defined for %s %s", 
 							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
 
+					if (Phase[phaseCode]->hetNucleationLiquid == NULL)
+						ErrorMsg("NUCLEATION_HET_LIQUID not defined for %s %s", 
+							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
+
 					if (!InRange (Phase[phaseCode]->hetNucleation, MIN_DEGREES, 
 							*(Phase[phaseCode]->transitionTemp), 0.0, HET_RATE_MAX))
-    					ErrorMsg("Heterogeneous nucleation rate out of range in %s %s",
+    					ErrorMsg("Heterogeneous soild nucleation rate out of range in %s %s",
+							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
+
+					if (!InRange (Phase[phaseCode]->hetNucleationLiquid, *(Phase[phaseCode]->transitionTemp), 
+							MAX_DEGREES, 0.0, HET_RATE_MAX))
+    					ErrorMsg("Heterogeneous liquid nucleation rate out of range in %s %s",
 							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
 
 					if (!InRange (Phase[phaseCode]->hetNucleation, *(Phase[phaseCode]->transitionTemp), 
 							MAX_DEGREES, 0.0, NUCRATE_MIN))
+    					ErrorMsg("Heterogeneous nucleation rate must be zero above transition temperature in %s %s",
+							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
+
+					if (!InRange (Phase[phaseCode]->hetNucleationLiquid, MIN_DEGREES, 
+							*(Phase[phaseCode]->transitionTemp), 0.0, NUCRATE_MIN))
     					ErrorMsg("Heterogeneous nucleation rate must be zero above transition temperature in %s %s",
 							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
 				}; //endif
@@ -280,14 +316,28 @@ void NucleationInit()
 						ErrorMsg("NUCLEATION_HOM not defined for %s %s", 
 							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
 
+					if (Phase[phaseCode]->homNucleationLiquid == NULL)
+						ErrorMsg("NUCLEATION_HOM_LIQUID not defined for %s %s", 
+							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
+
 					if (!InRange (Phase[phaseCode]->homNucleation, MIN_DEGREES, 
 							*(Phase[phaseCode]->transitionTemp), 0.0, HOM_RATE_MAX))
-    					ErrorMsg("Homogeneous nucleation rate out of range in %s %s",
+    					ErrorMsg("Homogeneous solid nucleation rate out of range in %s %s",
+							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
+
+					if (!InRange (Phase[phaseCode]->homNucleationLiquid, *(Phase[phaseCode]->transitionTemp), 
+							MAX_DEGREES, 0.0, HOM_RATE_MAX))
+    					ErrorMsg("Homogeneous liquid nucleation rate out of range in %s %s",
 							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
 
 					if (!InRange (Phase[phaseCode]->homNucleation, *(Phase[phaseCode]->transitionTemp), 
 							MAX_DEGREES, 0.0, NUCRATE_MIN))
-    					ErrorMsg("Homogeneous nucleation rate must be zero above transition temperature in %s %s",
+    					ErrorMsg("Homogeneous solid nucleation rate must be zero above transition temperature in %s %s",
+							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
+
+					if (!InRange (Phase[phaseCode]->homNucleationLiquid, MIN_DEGREES, 
+							*(Phase[phaseCode]->transitionTemp), 0.0, NUCRATE_MIN))
+    					ErrorMsg("Homogeneous liquid nucleation rate must be zero above transition temperature in %s %s",
 							Phase[phaseCode]->matlClassName, Phase[phaseCode]->phaseName);
 				}; //endif
 			}; //endloop p;
@@ -306,6 +356,11 @@ void NucleationInit()
 					A(CanHomNucleate) = Region[r]->canHomNucleate;
 					A(thresholdHet)	= Region[r]->thresholdHet;
 					A(thresholdHom) = Region[r]->thresholdHom;
+
+					A(CanHetNucleateLiquid) = Region[r]->canHetNucleateLiquid;
+					A(CanHomNucleateLiquid) = Region[r]->canHomNucleateLiquid;
+					A(thresholdHetLiquid) = Region[r]->thresholdHetLiquid;
+					A(thresholdHomLiquid) = Region[r]->thresholdHomLiquid;
 				}; //endloop k
 			}; //endloop j
 		}; //endloop i
