@@ -90,7 +90,9 @@
 #define FRONT ((int)0x010)
 #define BACK ((int)0x020)
 #define HETEROGENEOUS ((int)0x040)	//special hemispherical interface
+#define HETEROGENEOUS_LIQUID ((int)0x140)	//special hemispherical interface
 #define HOMOGENEOUS ((int)0x080)	//special spherical interface
+#define HOMOGENEOUS_LIQUID ((int)0x180)	//special spherical interface
 #define SURFACEMELT	((int)0x100)
 #define ALL_DIRECTIONS ((int)0x1FF)   // NESWUDHHS = 9 filled bits
 #define ALL_DIRORDINARY	((int)0x03F)	// NESWUD = 6 filled bits
@@ -304,10 +306,12 @@ typedef struct			// Simulation environment
     int curLine;			// current line number for error reporting
     int modeError;			// selects actions to perform on error condition
 	int eraMax;				// number of eras during simulation
-    int numberNucleated;	// total number of nucleations in simulations
+    int numberNucleated;	// total number of solid nucleations in simulations
+	int numberNucleatedLiquid;	// total number of liquid nucleations in simulations
 	int numberPhases;		// number of unique phases
 	int numberSlush;		// current number of slush nodes
 	int numberLiquid;		// current number of liquid nodes
+	int numberSolid;
 	int seedStochastic;		// seed for rand() generator
 
 	double dTmax;			// maximum temperature change

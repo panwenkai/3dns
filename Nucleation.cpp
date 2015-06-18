@@ -113,6 +113,82 @@ void NucleateHeterogeneous(CELL &cellNew, CELL &cellOld, unsigned int nodeLiquid
 
 //______________________________________________________
 //
+//	NucleateHeterogeneousLiquid
+//		Check if heterogeneous nucleation will occur in a
+//		liquid node with a neighbor from an ALIEN material class
+//______________________________________________________
+void NucleateHeterogeneousLiquid(CELL &cellNew, CELL &cellOld, unsigned int nodeSolid, unsigned int nodeOther, const int dirToSolid, const double tInterface)
+{
+	bool willNucleate = false;
+	int pIndex, pSolid;
+	double densityNuc;		//nucleation probability density
+
+	const double UNIT_CONV = CM_TO_M * CM_TO_M;
+
+	if (!SOL(CanHetNucleate)	 ||			//non-nucleating
+		!OTHER(CatalyzeMelting) ||			//non-catalytic interface
+		(BZONE(dirToSolid) > 0) )				//non-(100) neighbor
+
+		return;
+									//loop thru all possible phases
+	
+	if (SOL(T) < *(Phase[SOL(cellOld.cPhaseLiquid)]->transitionTemp))
+		return;
+
+	densityNuc = Sim.sClock.curDTime * LOOK_UP(Phase[SOL(cellOld.cPhaseLiquid)]->hetNucleationLiquid, tInterface);
+
+	//_______________ STOCHASTIC HETEROGENEOUS ____________________
+	if (Sim.modeStochastic)
+	{				
+		switch(dirToSolid) //solid to liquid direction
+		{
+			case EAST:
+			case WEST:
+				densityNuc *= SOL(AreaYZ) * UNIT_CONV;	//area converted to m^2 
+				break;
+			case SOUTH:
+			case NORTH:
+				densityNuc *= SOL(AreaXZ) * UNIT_CONV;	//area converted to m^2 
+				break;
+			case BACK:
+			case FRONT:
+				densityNuc *= SOL(AreaXY) * UNIT_CONV;	//area converted to m^2 
+				break;
+
+			default:		//no other directions are considered
+				ErrorMsg("Illegal direction call in NucleateHeterogeneous");
+		}; //endswitch
+	
+		SOL(DensityHetNuc) = densityNuc;		//reset nucleation probability density
+
+		willNucleate = RandomCheck(SOL(DensityHetNuc) * -1.0);
+	} //endif
+
+	//_______________ DETERMINISTIC HETEROGENEOUS ____________________
+	else
+	{
+		SOL(DensityHetNuc) += densityNuc;		//increment nucleation density
+
+		willNucleate = 	(SOL(DensityHetNuc) > SOL(thresholdHet));	// #/m2 density 
+	}; //endif
+
+	//________________ NUCLEATE IF NECESSARY _________________
+	if (willNucleate)
+	{
+		//To do: incorporate NodeMelt like from free surface
+		//NodeSolidify(cellNew, cellOld, nodeSolid, dirToSolid | HETEROGENEOUS, 
+		//	tInterface, pIndex, 0.0, ++Sim.numberNucleated);
+		NodeMelt(cellNew, cellOld, nodeSolid, Interface.dirInverse[dirToSolid] | HETEROGENEOUS_LIQUID, tInterface, 0.0);	
+		SOL(Velocity) = 0.0;	//force zero velocity initially
+			
+		ReportNucleationEvent(nodeSolid, dirToSolid | HETEROGENEOUS);
+	}; //endif
+	
+	return;
+}; //endfunc
+
+//______________________________________________________
+//
 //	NucleateHomogeneous
 //		Check if homogeneous nucleation will occur
 //		and if so, initiate solidification
@@ -195,6 +271,86 @@ void NucleateHomogeneous(CELL &cellNew, CELL &cellOld)
 	return;
 }; //endfunc
 
+
+//______________________________________________________
+//
+//	NucleateHomogeneousLiquid
+//		Check if homogeneous nucleation will occur
+//		and if so, initiate solidification
+//______________________________________________________
+void NucleateHomogeneousLiquid(CELL &cellNew, CELL &cellOld)
+{
+	bool willNucleate = false;
+    int i, j, k;
+	int pIndex, pSolid;
+	int nodeA;
+	double densityNuc;		//nucleation probability density
+
+	const double CM_TO_M_3 = CM_TO_M * CM_TO_M * CM_TO_M;
+    
+  	if(Sim.numberSolid == 0)
+    	return;
+
+	for (i = I_FIRST; i < I_LAST; i++)	
+	{
+		if (!(*(Geometry.canChangeI + i)) )
+			continue;		//this page cant change
+
+		for (j = J_FIRST; j < J_LAST; j++)
+		{
+			if (!(*(Geometry.canChangeJ + j)) )
+				continue;		//this row cant change
+			
+			for (k = K_FIRST; k < K_LAST; k++)
+			{	
+				if (!(*(Geometry.canChangeK + k)) )
+					continue;		//this column cant change
+
+				nodeA = IJKToIndex(i, j, k);
+				
+				if ((A(cellOld.cState) != SOLID) || !A(CanHomNucleate))		//only solid nodes can nucleate
+					continue;
+
+				if (Sim.modeStochastic)		//reset probability for stochastic mode
+					A(DensityHomNuc) = (double)0.0;
+
+				if (A(T) < *(Phase[A(cellOld.cPhaseLiquid)]->transitionTemp))
+					continue;
+
+				densityNuc = Sim.sClock.curDTime * LOOK_UP(Phase[A(cellOld.cPhaseLiquid)]->homNucleationLiquid, A(T));
+
+				//_______________ STOCHASTIC HOMOGENEOUS ____________________
+				if (Sim.modeStochastic)
+				{	
+					A(DensityHomNuc) = densityNuc * A(Volume) * CM_TO_M_3;
+						
+					willNucleate = RandomCheck(A(DensityHomNuc) * -1.0);
+				} //endif
+
+				//_______________ DETERMINISTIC HOMOGENEOUS ____________________
+				else
+				{
+					A(DensityHomNuc) += densityNuc;		//increment nucleation density
+
+					willNucleate = 	( A(DensityHomNuc) > A(thresholdHom) );	//heterogeneous
+				}; //endif
+					
+				//_______________ NUCLEATE IF NECESSARY _____________
+				if (willNucleate)
+				{
+					//To incoporate NodeMelting
+					//NodeSolidify(cellNew, cellOld, nodeA, HOMOGENEOUS, A(T), 0, 0.0, ++Sim.numberNucleated);
+					NodeMelt(cellNew, cellOld, nodeA, HETEROGENEOUS_LIQUID, A(T), 0.0);
+					//To incoporate liquid nucleation reporting
+					ReportNucleationEvent(nodeA, HOMOGENEOUS);
+				}; //endif
+	
+			}; //endloop k
+		}; //endloop j
+	}; //endloop i
+	
+	return;
+}; //endfunc
 
 //______________________________________________________
 //

@@ -60,6 +60,7 @@ void IntraNodeDump();
 void IntraNodeFinalize();
 void NodeSolidify(CELL &cellNew, CELL &cellOld, const int nodeLiquid, const int dirToLiq, 
 				const double tInterface, const int solidIndex, const double timeLeft, const int grainCode);
+void NodeMelt(CELL &cellNew, CELL &cellOld, const int nodeA, const int dirToLiq, const double tInterface, const double timeLeft);
 void PhaseCleanup (void);
 int PhaseFind(int *phaseList, string phaseName);
 void PhaseInit (void);

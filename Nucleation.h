@@ -21,7 +21,9 @@ void Nucleation (void);
 void NucleationCleanup (void);
 void NucleationInit (void);
 void NucleateHeterogeneous(CELL &cellNew, CELL &cellOld, unsigned int nodeLiquid, unsigned int nodeOther, const int dirSoltoLiq, const double tInterface);
+void NucleateHeterogeneousLiquid(CELL &cellNew, CELL &cellOld, unsigned int nodeSolid, unsigned int nodeOther, const int dirToSolid, const double tInterface);
 void NucleateHomogeneous(CELL &cellNew, CELL &cellOld);
+void NucleateHomogeneousLiquid(CELL &cellNew, CELL &cellOld);
 void NucleationEventReport(int i, int j, int k, double nucNumber);
 
 

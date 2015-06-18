@@ -70,7 +70,7 @@ DMATRIX fractionNew;	//new fraction solid
 DMATRIX timeXInter;		//extra time from inter-node calculations
 DMATRIX timeXIntra;		//extra time from intra-node calculations
 
-int oldSlush, oldLiquid;
+int oldSlush, oldLiquid, oldSolid;
 	
 inline double TIMELEFT(double iNew, double iOld)
 {	return( (iNew>1) ? (iNew-1.0)/(iNew-iOld) : ((iNew<0) ? iNew/(iNew-iOld) : 0) ); }
@@ -323,6 +323,7 @@ void InterNode()
 	}; //endloop k
 	
 	NucleateHomogeneous(cellNew, cellOld);		//Homogeneous nucleation
+	NucleateHomogeneousLiquid(cellNew, cellOld);		//Homogeneous nucleation
 
 	//___________ SPECIAL EDGE CONDITIONS ____________
 	if (Geometry.canChangeJ[J_FIRST])	
@@ -431,6 +432,7 @@ int IntraNode()
 
 	oldSlush = Sim.numberSlush;		//save number of slush nodes
 	oldLiquid = Sim.numberLiquid;	//save number of liquid nodes
+	oldSolid = Sim.numberSolid;     //save number of solid nodes
 
 	cellOld.cHistory = PhaseHistory;
 	cellOld.cState = State;
@@ -521,6 +523,7 @@ void IntraNodeDump()
 
 		Sim.numberSlush = oldSlush;
 		Sim.numberLiquid = oldLiquid;
+		Sim.numberSolid = oldSolid;
 	
 		Sim.calcIntraNode = false;
 	}; //endif
@@ -731,11 +734,22 @@ double MotionNode(CELL &cellNew, CELL &cellOld, const int i, const int j, const 
 			break;
 
 		default:		//use 3D scaling
-			posOld = PositionHigh(A(cellOld.cFraction));	//position=fraction here
-			posNew = posOld + 2.0 * (Sim.sClock.curDTime + A(cellOld.cTimeX)) * A(Velocity) *
-				(1/DX + 1/DY + 1/DZ);
-			A(cellNew.cFraction) = FractionHigh(posNew, ICOMP, isComplete);														//fraction = posNew
-			break;
+			if(A(cellOld.cDirection)>((int)0x100)) //In this case we have a liquid nucleation
+			{
+				posOld = PositionHigh(A(cellOld.cFraction));	//position=fraction here
+				posNew = posOld - 2.0 * (Sim.sClock.curDTime + A(cellOld.cTimeX)) * A(Velocity) *
+					(1/DX + 1/DY + 1/DZ);
+				A(cellNew.cFraction) = FractionHigh(posNew, ICOMP, isComplete);														//fraction = posNew
+				break;
+			}
+			else //In this case we have a solid nucleation
+			{
+				posOld = PositionHigh(A(cellOld.cFraction));	//position=fraction here
+				posNew = posOld + 2.0 * (Sim.sClock.curDTime + A(cellOld.cTimeX)) * A(Velocity) *
+					(1/DX + 1/DY + 1/DZ);
+				A(cellNew.cFraction) = FractionHigh(posNew, ICOMP, isComplete);														//fraction = posNew
+				break;
+			}
 
 		}; //endswitch
 
@@ -877,6 +891,7 @@ void NodeMelt(CELL &cellNew, CELL &cellOld, const int nodeA, const int dirToLiq,
 	if (A(cellNew.cState) == SOLID)		//initial melting
 	{
 		Sim.numberSlush++;
+		Sim.numberSolid--;
 		HistorySet(cellNew.cHistory, nodeA, SLUSH, A(cellOld.cPhaseSolid));
 	}; //endif
 
@@ -961,6 +976,7 @@ void NodeSolidifyComplete(CELL &cellNew, CELL &cellOld, const int nodeA, double 
 	A(FractionSolid) = 1.;
 	HistorySet(cellNew.cHistory, nodeA, SOLID, A(cellOld.cPhaseSolid));
 	Sim.numberSlush--;
+	Sim.numberSolid++;
 
 	return;
 }; //endfunc
@@ -1060,6 +1076,10 @@ void PhaseInit ()
 	int i, j, k;	//pointers to region positions
 	int nodeA;
 
+	Sim.numberLiquid = 0;
+	Sim.numberSlush = 0;
+	Sim.numberSolid = 0;
+
     MatrixNew (&CanChange);
     MatrixNew (&FractionSolid);
 	MatrixZero(MatrixNew(&GrainCode));
@@ -1073,7 +1093,7 @@ void PhaseInit ()
     MatrixZero(MatrixNew(&QInterface));
     MatrixZero(MatrixNew(&SlushDirection));
     MatrixNew (&TInterface);
-    MatrixNew (&State);
+    MatrixZero(MatrixNew (&State));
     MatrixNew (&Velocity);
 
 	MatrixZero(MatrixNew(&canInteract));
@@ -1199,8 +1219,8 @@ void PhaseInit ()
 					
 					else //solid nodes
 					{
-						if (A(State) == LIQUID)
-							Sim.numberLiquid--;
+						if (A(State) != SOLID)
+							Sim.numberSolid++;
 
 						A(State) = SOLID;
 						A(PhaseCodeSolid) = Region[r]->phaseStart;
