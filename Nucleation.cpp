@@ -132,10 +132,86 @@ void NucleateHeterogeneousLiquid(CELL &cellNew, CELL &cellOld, unsigned int node
 		return;
 									//loop thru all possible phases
 	
-	if (SOL(T) < *(Phase[SOL(cellOld.cPhaseLiquid)]->transitionTemp))
+	if (SOL(T) < *(Phase[SOL(cellOld.cPhaseSolid)]->transitionTemp))
 		return;
 
-	densityNuc = Sim.sClock.curDTime * LOOK_UP(Phase[SOL(cellOld.cPhaseLiquid)]->hetNucleationLiquid, tInterface);
+	densityNuc = Sim.sClock.curDTime * LOOK_UP(Phase[SOL(cellOld.cPhaseSolid)]->hetNucleationLiquid, tInterface);
+
+	//_______________ STOCHASTIC HETEROGENEOUS ____________________
+	if (Sim.modeStochastic)
+	{				
+		switch(dirToSolid) //solid to liquid direction
+		{
+			case EAST:
+			case WEST:
+				densityNuc *= SOL(AreaYZ) * UNIT_CONV;	//area converted to m^2 
+				break;
+			case SOUTH:
+			case NORTH:
+				densityNuc *= SOL(AreaXZ) * UNIT_CONV;	//area converted to m^2 
+				break;
+			case BACK:
+			case FRONT:
+				densityNuc *= SOL(AreaXY) * UNIT_CONV;	//area converted to m^2 
+				break;
+
+			default:		//no other directions are considered
+				ErrorMsg("Illegal direction call in NucleateHeterogeneous");
+		}; //endswitch
+	
+		SOL(DensityHetNuc) = densityNuc;		//reset nucleation probability density
+
+		willNucleate = RandomCheck(SOL(DensityHetNuc) * -1.0);
+	} //endif
+
+	//_______________ DETERMINISTIC HETEROGENEOUS ____________________
+	else
+	{
+		SOL(DensityHetNuc) += densityNuc;		//increment nucleation density
+
+		willNucleate = 	(SOL(DensityHetNuc) > SOL(thresholdHet));	// #/m2 density 
+	}; //endif
+
+	//________________ NUCLEATE IF NECESSARY _________________
+	if (willNucleate)
+	{
+		//To do: incorporate NodeMelt like from free surface
+		//NodeSolidify(cellNew, cellOld, nodeSolid, dirToSolid | HETEROGENEOUS, 
+		//	tInterface, pIndex, 0.0, ++Sim.numberNucleated);
+		NodeMelt(cellNew, cellOld, nodeSolid, Interface.dirInverse[dirToSolid] | HETEROGENEOUS_LIQUID, tInterface, 0.0);	
+		SOL(Velocity) = 0.0;	//force zero velocity initially
+			
+		ReportNucleationEvent(nodeSolid, dirToSolid | HETEROGENEOUS);
+	}; //endif
+	
+	return;
+}; //endfunc
+
+//______________________________________________________
+//
+//	NucleateHeterogeneousLiquid
+//		Check if heterogeneous nucleation will occur in a
+//		liquid node with a neighbor from an ALIEN material class
+//______________________________________________________
+void NucleateHeterogeneousLiquidSurface(CELL &cellNew, CELL &cellOld, unsigned int nodeSolid, const int dirToSolid, const double tInterface)
+{
+	bool willNucleate = false;
+	int pIndex, pSolid;
+	double densityNuc;		//nucleation probability density
+
+	const double UNIT_CONV = CM_TO_M * CM_TO_M;
+
+	if (!SOL(CanHetNucleate)	 ||			//non-nucleating
+		(BZONE(dirToSolid) > 0) )				//non-(100) neighbor
+
+		return;
+									//loop thru all possible phases
+	
+	if (SOL(T) < *(Phase[SOL(cellOld.cPhaseSolid)]->transitionTemp))
+		return;
+
+	densityNuc = Sim.sClock.curDTime * LOOK_UP(Phase[SOL(cellOld.cPhaseSolid)]->hetNucleationLiquidSurface, tInterface);
+	double* nucleationrate = Phase[SOL(cellOld.cPhaseSolid)]->hetNucleationLiquid;
 
 	//_______________ STOCHASTIC HETEROGENEOUS ____________________
 	if (Sim.modeStochastic)
@@ -314,10 +390,10 @@ void NucleateHomogeneousLiquid(CELL &cellNew, CELL &cellOld)
 				if (Sim.modeStochastic)		//reset probability for stochastic mode
 					A(DensityHomNuc) = (double)0.0;
 
-				if (A(T) < *(Phase[A(cellOld.cPhaseLiquid)]->transitionTemp))
+				if (A(T) < *(Phase[A(cellOld.cPhaseSolid)]->transitionTemp))
 					continue;
 
-				densityNuc = Sim.sClock.curDTime * LOOK_UP(Phase[A(cellOld.cPhaseLiquid)]->homNucleationLiquid, A(T));
+				densityNuc = Sim.sClock.curDTime * LOOK_UP(Phase[A(cellOld.cPhaseSolid)]->homNucleationLiquid, A(T));
 
 				//_______________ STOCHASTIC HOMOGENEOUS ____________________
 				if (Sim.modeStochastic)

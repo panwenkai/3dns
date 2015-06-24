@@ -112,13 +112,16 @@ void CheckNodeMelt(CELL &cellNew, CELL &cellOld, const int nodeA,
 void CheckNodeMeltAlien(CELL &cellNew, CELL &cellOld, const int nodeSolid, const int nodeOther, const int dirSolToLiq, const double tInterface)
 {
 	if (!SOL(CanChange))	//if node can't melt
-		return;							
+		return;		
+
+	NucleateHeterogeneousLiquid(cellNew, cellOld, nodeSolid, nodeOther, Interface.dirInverse[dirSolToLiq], tInterface);
+
 							//same material class (RA p.755)
-	if (OTHER(CatalyzeMelting) && (tInterface > TMelt(cellOld.cPhaseSolid, nodeSolid)) )
+	/*if (OTHER(CatalyzeMelting) && (tInterface > TMelt(cellOld.cPhaseSolid, nodeSolid)) )
 	{
 		NodeMelt(cellNew, cellOld, nodeSolid, dirSolToLiq | SURFACEMELT, tInterface, 0.0);
 		OTHER(Velocity) = 0.0;
-	};
+	};*/
 
 	return;
 }; //endfunc
@@ -133,11 +136,12 @@ void CheckNodeMeltAlien(CELL &cellNew, CELL &cellOld, const int nodeSolid, const
 void CheckNodeMeltSurface(CELL &cellNew, CELL &cellOld, int nodeA, int nodeB, int dirAtoSurf)
 {
 	double tSurf;	//extrapolated surface temperature
+	tSurf = 1.5 * A(T) - 0.5 * B(T);	//assumes equal size nodes ! change this
 	
-	if (((A(cellOld.cState) == SOLID) && A(CanChange)) ||
-		((A(cellOld.cState) == SLUSH) && IS_ORDINARY(A(cellOld.cDirection)) ))
+	NucleateHeterogeneousLiquidSurface(cellNew, cellOld, nodeA, Interface.crystalType[dirAtoSurf], tSurf);
+
+	if (((A(cellOld.cState) == SLUSH) && IS_ORDINARY(A(cellOld.cDirection)) ))
 	{
-		tSurf = 1.5 * A(T) - 0.5 * B(T);	//assumes equal size nodes ! change this
 	
 		if (tSurf > TMelt(cellOld.cPhaseSolid, nodeA))
 			NodeMelt(cellNew, cellOld, nodeA, dirAtoSurf | SURFACEMELT, tSurf, 0.0);

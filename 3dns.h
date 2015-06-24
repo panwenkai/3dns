@@ -54,7 +54,7 @@
 #define LOOP_K	for(k=K_FIRST; k<K_LAST; k++)
 
 #define MIN_DEGREES  ((int)77)		       //minimum temperature
-#define MAX_DEGREES	 ((int)4000)	       //maximum degrees in lookup table
+#define MAX_DEGREES	 ((int)3300)	       //maximum degrees in lookup table
 
 #define MAX_DIM		 ((int)(3))			 //maximum number of dimensions
 #define MAX_I        ((int)(0x400))      //maximum number of i-nodes

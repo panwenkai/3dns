@@ -879,6 +879,8 @@ void ReportProperties(char *baseName)
 		CHKNULL(THIS_PHASE->interfaceResponse);
 		CHKNULL(THIS_PHASE->hetNucleation);
 		CHKNULL(THIS_PHASE->homNucleation);
+		CHKNULL(THIS_PHASE->hetNucleationLiquid);
+		CHKNULL(THIS_PHASE->homNucleationLiquid);
 
 		fprintf(FpProperties, "//PHASE %s %s\n", THIS_PHASE->matlClassName, THIS_PHASE->phaseName);
 		fprintf(FpProperties, "PAGE INT %d  //phase code\n", phaseCode);
@@ -898,6 +900,8 @@ void ReportProperties(char *baseName)
 			PrintDouble(FpProperties, THIS_PHASE->interfaceResponse[t]);
 			PrintDouble(FpProperties, THIS_PHASE->hetNucleation[t]);
 			PrintDouble(FpProperties, THIS_PHASE->homNucleation[t]);
+			PrintDouble(FpProperties, THIS_PHASE->hetNucleationLiquid[t]);
+			PrintDouble(FpProperties, THIS_PHASE->homNucleationLiquid[t]);
 
 			fprintf(FpProperties, "\n");
 		} //endloop t

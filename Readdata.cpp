@@ -310,6 +310,19 @@ int LoadMaterialFile(string &fileName, int regionNum)
             ParseLine(entry, T_CONST | T_FUNCTION | T_RPN | T_MATRIX2D, NULL, VAL_ANY, Report.pathSearch);
 	  		GenTable(entry.value, &(thisPhase->homNucleationLiquid), MIN_DEGREES, MAX_DEGREES, 1.0);
         }
+
+		else if( entry.keyWord == "NUCLEATION_HET_LIQUID_SURFACE" )
+	  	{
+			ParseLine(entry, T_CONST | T_FUNCTION | T_RPN | T_MATRIX2D, NULL, VAL_ANY, Report.pathSearch);
+	  		GenTable(entry.value, &(thisPhase->hetNucleationLiquidSurface), MIN_DEGREES, MAX_DEGREES, 1.0);
+       	}
+
+      	else if( entry.keyWord == "NUCLEATION_HOM_LIQUID_SURFACE" )
+	 	{
+            ParseLine(entry, T_CONST | T_FUNCTION | T_RPN | T_MATRIX2D, NULL, VAL_ANY, Report.pathSearch);
+	  		GenTable(entry.value, &(thisPhase->homNucleationLiquidSurface), MIN_DEGREES, MAX_DEGREES, 1.0);
+        }
+
       	else if( entry.keyWord == "THERMAL_CONDUCTIVITY" )
 	  	{
             ParseLine(entry, T_CONST | T_FUNCTION | T_RPN | T_MATRIX2D, NULL, VAL_ANY, Report.pathSearch);
