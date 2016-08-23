@@ -57,9 +57,9 @@
 #define MAX_DEGREES	 ((int)3300)	       //maximum degrees in lookup table
 
 #define MAX_DIM		 ((int)(3))			 //maximum number of dimensions
-#define MAX_I        ((int)(0x400))      //maximum number of i-nodes
-#define MAX_J        ((int)(0x200))      //maximum number of j-nodes
-#define MAX_K		 ((int)(0x100))		 //maximum number of k-nodes
+#define MAX_I        ((int)(0x4000))      //maximum number of i-nodes
+#define MAX_J        ((int)(0x2000))      //maximum number of j-nodes
+#define MAX_K		 ((int)(0x1000))		 //maximum number of k-nodes
 #define MAX_NODES	 ((int)(0x1000000))	 //maximum total number of nodes
 #define MAX_JREGIONS 16		       //maximum vertical regions (layers)
 #define MAX_IREGIONS 16		       //maximum horizontal regions
@@ -73,7 +73,7 @@
 
 #define MAX_TCHANGE	 ((double)1000.0)	//maximum temperature change
 #define MAX_ICHANGE	 ((double)0.98)		//maximum fraction solid change
-#define MAX_RETRIES	 ((int) 6)			//maximum number of retries for clock reduction
+#define MAX_RETRIES	 ((int) 12)			//maximum number of retries for clock reduction
 
 #define MIN_LAMBDA	 ((double)1E-7) //minimum laser wavelength [m]
 #define MAX_LAMBDA	 ((double)1E-5)	//maximum laser wavelength [m]
@@ -223,6 +223,7 @@ typedef struct
     double *homNucleation;	//homogeneous nucleation to solid
 	double *hetNucleationLiquid;  //heterogeneous nucleation to liquid
 	double *homNucleationLiquid;  //homogeneous nucleation to liquid
+	double *hetNucleationLiquidSurface;  //heterogeneous nucleation to liquid at free surface
     double *indexN;
     double *indexK;
     double *interfaceResponse;	//lookup table
@@ -254,11 +255,13 @@ typedef struct
     bool canHomNucleate;
 	bool canHetNucleateLiquid;
 	bool canHomNucleateLiquid;
+	bool canHetNucleateLiquidSurface;
 
 	double thresholdHet;	//heterogeneous nucleation threshold to solid
     double thresholdHom;	//homogeneous nucleation threshold to solid
 	double thresholdHetLiquid;	//heterogeneous nucleation threshold to liquid
     double thresholdHomLiquid;	//homogeneous nucleation threshold to liquid
+	double thresholdHetLiquidSurface;	//heterogeneous nucleation threshold to liquid at free surface
 } REGION;
 
 typedef struct			// Reporting information

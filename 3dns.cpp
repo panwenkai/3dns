@@ -54,9 +54,9 @@ int main (int argc, char **argv)
 
 	ZeroStructures ();		      //set all globals structs to known state (0)
 
-	//std::cout<< "argc = " << argc << std::endl;
-	//std::cout<< "argv[0] = " << argv[0] << std::endl;
-	//std::cout<< "argv[1] = " << argv[1] << std::endl;
+	std::cout<< "argc = " << argc << std::endl;
+	std::cout<< "argv[0] = " << argv[0] << std::endl;
+	std::cout<< "argv[1] = " << argv[1] << std::endl;
 
 	if ((argc == 1) || (argc > 3))
   	{

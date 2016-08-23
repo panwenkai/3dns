@@ -43,10 +43,12 @@ EXTERN BMATRIX CanHetNucleate;
 EXTERN BMATRIX CanHomNucleate;
 EXTERN BMATRIX CanHetNucleateLiquid;
 EXTERN BMATRIX CanHomNucleateLiquid;
+EXTERN BMATRIX CanHetNucleateLiquidSurface;
 EXTERN DMATRIX DensityHetNuc;		//heterogeneous nucleation density to soild
 EXTERN DMATRIX DensityHomNuc;       //homogeneous nucleation density to soild
 EXTERN DMATRIX DensityHetNucLiquid;		//heterogeneous nucleation density to liquid
 EXTERN DMATRIX DensityHomNucLiquid;       //homogeneous nucleation density to liquid
+EXTERN DMATRIX DensityHetNucLiquidSurface;		//heterogeneous nucleation density to liquid
 #undef EXTERN
 
 #endif

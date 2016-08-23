@@ -317,12 +317,6 @@ int LoadMaterialFile(string &fileName, int regionNum)
 	  		GenTable(entry.value, &(thisPhase->hetNucleationLiquidSurface), MIN_DEGREES, MAX_DEGREES, 1.0);
        	}
 
-      	else if( entry.keyWord == "NUCLEATION_HOM_LIQUID_SURFACE" )
-	 	{
-            ParseLine(entry, T_CONST | T_FUNCTION | T_RPN | T_MATRIX2D, NULL, VAL_ANY, Report.pathSearch);
-	  		GenTable(entry.value, &(thisPhase->homNucleationLiquidSurface), MIN_DEGREES, MAX_DEGREES, 1.0);
-        }
-
       	else if( entry.keyWord == "THERMAL_CONDUCTIVITY" )
 	  	{
             ParseLine(entry, T_CONST | T_FUNCTION | T_RPN | T_MATRIX2D, NULL, VAL_ANY, Report.pathSearch);
@@ -510,6 +504,12 @@ void LoadOverlayBlock(FILEINFO &fInfo, ENTRY &entry, int regionNum)
         {
             ParseLine(entry, T_FLOAT, 1, VAL_NON_NEGATIVE | VAL_FLAG_INFINITY, NO_PATH);
 			entry.value.Load(&(thisRegion->thresholdHomLiquid) );
+        }
+
+		else if( entry.keyWord == "OVERLAY_HET_THRESHOLD_LIQUID_SURFACE" )
+		{
+            ParseLine(entry, T_FLOAT, 1, VAL_NON_NEGATIVE | VAL_FLAG_INFINITY, NO_PATH);
+			entry.value.Load(&(thisRegion->thresholdHetLiquidSurface) );
         }
 
       	else if( entry.keyWord == "OVERLAY_MATERIAL" )
@@ -718,6 +718,22 @@ void LoadParametersFile(string &datFileName)
 			{
 				thisRegion = RegionNew(i);
 				thisRegion->thresholdHomLiquid = temp[i]; 
+			} //endloop 
+
+			delete [] temp;
+        }
+
+		else if( entry.keyWord == "LAYER_HET_THRESHOLD_LIQUID_SURFACE" )
+        {
+            double *temp;
+			
+			ParseLine(entry, T_FLOAT, &(Geometry.jZones), VAL_NON_NEGATIVE | VAL_FLAG_INFINITY, NO_PATH);
+			entry.value.Load(&temp);
+
+			for (i=LAYER_FIRST; i<LAYER_LAST; i++)	//distribute info to regions
+			{
+				thisRegion = RegionNew(i);
+				thisRegion->thresholdHetLiquidSurface = temp[i]; 
 			} //endloop 
 
 			delete [] temp;
