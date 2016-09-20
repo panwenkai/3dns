@@ -57,10 +57,10 @@
 #define MAX_DEGREES	 ((int)3300)	       //maximum degrees in lookup table
 
 #define MAX_DIM		 ((int)(3))			 //maximum number of dimensions
-#define MAX_I        ((int)(0x4000))      //maximum number of i-nodes
-#define MAX_J        ((int)(0x2000))      //maximum number of j-nodes
-#define MAX_K		 ((int)(0x1000))		 //maximum number of k-nodes
-#define MAX_NODES	 ((int)(0x1000000))	 //maximum total number of nodes
+#define MAX_I        ((int)(0x400000))      //maximum number of i-nodes
+#define MAX_J        ((int)(0x20000))      //maximum number of j-nodes
+#define MAX_K		 ((int)(0x10000))		 //maximum number of k-nodes
+#define MAX_NODES	 ((int)(0x10000000))	 //maximum total number of nodes
 #define MAX_JREGIONS 16		       //maximum vertical regions (layers)
 #define MAX_IREGIONS 16		       //maximum horizontal regions
 #define MAX_KREGIONS 16			   //maximum front-back regions
@@ -78,7 +78,7 @@
 #define MIN_LAMBDA	 ((double)1E-7) //minimum laser wavelength [m]
 #define MAX_LAMBDA	 ((double)1E-5)	//maximum laser wavelength [m]
 #define MIN_ENERGY	 ((double)0.0)  //minimum laser energy density [J/cm2]
-#define MAX_ENERGY	 ((double)100.0)	//maximum laser energy density [J/cm2]
+#define MAX_ENERGY	 ((double)2000.0)	//maximum laser energy density [J/cm2]
 #define MAX_BZ		 ((int) 3)		//maximum number of boundary zones
 
 #define MSG_END_PROGRAM ((int) 0x01)	//signal to end program
@@ -201,6 +201,9 @@ typedef struct			// Laser parameters
 	double normTemporal;	// normalization factor for temporal curve
     double waveLength;		// wavelength (Meters)
 
+	double velocityX;	// The velocity in the X direction that the beam moves
+	double velocityZ;	// The velocity in the Z direction that the beam moves
+
 	MATRIX2D egySpatial;		// indexed in i-space
 	
 	GENERIC dataSpatialX;		//input spatial x-profile
@@ -247,6 +250,9 @@ typedef struct
 	int *jLocations;	//columns that this region spans
 	int *kLocations;	//sheets that this region spans
 	int *phaseIndex;	//list of phase numbers associated with this region
+
+	int grainIndex;     //The index of the grain which this region belongs to
+						//Primarily used to identify grain boundaries
 
 	bool canChange;		//can form liquid phase
     bool catalyzeFreezing;	//true if it can catalyze freezing in neighboring regions

@@ -31,7 +31,7 @@
 #include "nucleation.h"
 #include "parsefunc.h"		       //for GenTable
 #include "phase.h"
-#include "report.h"
+#include "REPORT.H"
 #include "readdata.h"
 #include "thermal.h"
 #include "files.h"   //temporary
@@ -144,6 +144,7 @@ int main (int argc, char **argv)
       	
 			try
 			{
+				LaserMove();
 				LaserInput();	//laser absorption -> QLaser
 				IntraNode();	//internal interface motion -> QInterface
  				HeatFlow();		//heat flow
@@ -165,7 +166,7 @@ int main (int argc, char **argv)
 			IntraNodeFinalize();	//finalize changes to interface
 			InterNode();			//inter-node motion, melting, nucleation
 			HeatFlowFinalize();		//finalize temperature changes Tnew->T
-
+			//LaserInit();
 			TimeStepAdjust();
 			
 			Report.prevStep = Sim.sClock.curDTime;

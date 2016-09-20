@@ -15,7 +15,7 @@
 void LaserInit ();
 void LaserInput ();
 void LaserCleanup ();
-
+void LaserMove ();
 //_________________________________________________
 // Public variables
 //_________________________________________________

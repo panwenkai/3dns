@@ -1555,9 +1555,10 @@ bool ParseVector(ENTRY &entry, int typeSpec, int numSpec, int valSpec)
 
 		case T_FLOAT:
 			xD = new double[entry.numElements];
+			//InfoMsg("entry.numElements =  %d", entry.numElements);
 			while (entry.list[elemList])
 				elemNum += ParseFloat(entry.list[elemList++], xD[elemNum], valSpec);
-			
+
 			if (elemNum > 0)
 				entry.value.Store(xD, elemNum);
 				
@@ -1614,7 +1615,10 @@ bool ParseVector(ENTRY &entry, int typeSpec, int numSpec, int valSpec)
 	}; //endif
 
     if (elemNum == 0)
+	{
+		InfoMsg("Vector is empty");
 		return(false);   //vector was empty
+	}
 
     if ((numSpec != NUM_ANY) && (elemNum != numSpec))
 	{

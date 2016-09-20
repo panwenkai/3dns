@@ -41,7 +41,7 @@ void **Create2DArray (long r, long c, int size)
 		ErrorMsg ("OUT OF MEMORY");
   
 	for (k = 1; k < r; k++)
-		a[k] = (void *) ((long) a[0] + k * c * size);
+		a[k] = (void *) ((unsigned long long) a[0] + k * c * size);
 
 	return a;
 }; //endfunc
@@ -59,14 +59,15 @@ void ***Create3DArray (long x, long y, long z, int size)
 
 	test++;
 	a = (void ***) Create2DArray (x, y, sizeof (void *));
+	int size_of_pointer = sizeof (void *);
 	**a = (void *) malloc (size * x * y * z);
 	
 	if (**a == 0)
-		ErrorMsg ("OUT OF MEMORY");
+		ErrorMsg ("OUT OF MEMORY 3D");
     
 	for (i = 0; i < x; i++)
 		for (j = 0; j < y; j++)
-			a[i][j] = (void *)((long) a[0][0] + (i * (y * z) + (j * z)) * size);
+			a[i][j] = (void *)((unsigned long long) a[0][0] + (i * (y * z) + (j * z)) * size);
 	
 	return a;
 }; //endfunc

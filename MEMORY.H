@@ -52,13 +52,13 @@ void MemoryInit ();
 //		General retrieval of value from array using
 //		single index notation
 //______________________________________________________
-inline double &VAL(DMATRIX d, int nodeIndex) 
+inline double &VAL(DMATRIX d, unsigned long long nodeIndex) 
 	{ return (*(**d + nodeIndex)); };
 
-inline int &VAL(IMATRIX i, int nodeIndex) 
+inline int &VAL(IMATRIX i, unsigned long long nodeIndex) 
 	{ return (*(**i + nodeIndex)); };
 
-inline bool &VAL(BMATRIX b, int nodeIndex) 
+inline bool &VAL(BMATRIX b, unsigned long long nodeIndex) 
 	{ return (*(**b + nodeIndex)); };
 
 

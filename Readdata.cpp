@@ -482,6 +482,12 @@ void LoadOverlayBlock(FILEINFO &fInfo, ENTRY &entry, int regionNum)
 			entry.value.Load(&(thisRegion->catalyzeMelting) );
         }
 
+		else if( entry.keyWord == "OVERLAY_GRAIN_INDEX" )
+		{
+            ParseLine(entry, T_INT, 1, VAL_POSITIVE , NO_PATH);
+			entry.value.Load(&(thisRegion->grainIndex) );
+        }
+
       	else if( entry.keyWord == "OVERLAY_HET_THRESHOLD" )
 		{
             ParseLine(entry, T_FLOAT, 1, VAL_NON_NEGATIVE | VAL_FLAG_INFINITY, NO_PATH);
@@ -614,6 +620,18 @@ void LoadParametersFile(string &datFileName)
 			Laser.waveLength *= M_TO_CM;
         }
 
+		else if( entry.keyWord == "LASER_VELOCITY_X" )
+		{
+            ParseLine(entry, T_FLOAT, 1, VAL_ANY, NO_PATH);
+        	entry.value.Load(&(Laser.velocityX));
+        }
+
+		else if( entry.keyWord == "LASER_VELOCITY_Z" )
+		{
+            ParseLine(entry, T_FLOAT, 1, VAL_ANY, NO_PATH);
+        	entry.value.Load(&(Laser.velocityZ));
+        }
+
       	else if( entry.keyWord == "LAYER_CAN_CHANGE" )
         {
 			bool *temp;
@@ -654,6 +672,21 @@ void LoadParametersFile(string &datFileName)
 			{
 				thisRegion = RegionNew(r);
 				thisRegion->catalyzeMelting = temp[r]; 
+			} //endloop 
+			
+			delete [] temp;
+        }
+
+		else if( entry.keyWord == "LAYER_GRAIN_INDEX" )
+        {
+            int *temp;
+            ParseLine(entry, T_INT, &(LAYER_LAST), NULL, NO_PATH);
+			entry.value.Load(&temp);
+
+			for (r = LAYER_FIRST; r < LAYER_LAST; r++)	//distribute info to regions
+			{
+				thisRegion = RegionNew(r);
+				thisRegion->grainIndex = temp[r]; 
 			} //endloop 
 			
 			delete [] temp;
@@ -789,7 +822,10 @@ void LoadParametersFile(string &datFileName)
         else if( entry.keyWord == "MODE_STOCHASTIC" )
         {
         	ParseLine(entry, T_BOOL, 1, NULL, NO_PATH);
-			entry.value.Load(&(Sim.modeStochastic));			
+			entry.value.Load(&(Sim.modeStochastic));
+			int i = 1;
+			int j = 1;
+			Sim.modeStochastic = false;
         }
 
 

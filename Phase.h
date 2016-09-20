@@ -85,13 +85,14 @@ EXTERN BMATRIX CatalyzeMelting;		//if node catalyzes melting of neighbors
 EXTERN BMATRIX CatalyzeFreezing;	//if node catalyzes freezing of neighbors
 EXTERN DMATRIX FractionSolid;	// fraction of node that is solid
 EXTERN IMATRIX GrainCode;		// parent grain code
+EXTERN IMATRIX GrainIndex;      // initial grain distribution indicator. Used to identify grain boundaries. To be integrated with GrainCode and PhaseHistory
 EXTERN DMATRIX IPos;			// fractional position within node
 EXTERN DMATRIX JPos;			// fractional position within node
 EXTERN DMATRIX KPos;			// fractional position within node			
 EXTERN IMATRIX MaterialClass;	// index for common material classes
 EXTERN IMATRIX PhaseCodeLiquid;	// index of liquid phase in each node
 EXTERN IMATRIX PhaseCodeSolid;	// index of solid phase in each node
-EXTERN IMATRIX PhaseHistory;  	// flags for history of phase evolution
+EXTERN IMATRIX PhaseHistory;  	// flags for history of phase evolution REPORTDED in .hist files
 EXTERN DMATRIX QInterface;		// energy change associated with interfacial motion
 EXTERN IMATRIX SlushDirection;	// N&S&E&W direction of slush
 EXTERN IMATRIX State;		// state of node (SOLID/LIQUID/SLUSH)

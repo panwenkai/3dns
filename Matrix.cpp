@@ -1242,7 +1242,7 @@ bool string::operator==(const char *rhs)
 // string::operator new[]
 //	 Handles clean initialization of string array
 //_________________________________________
-void* string::operator new[] (unsigned int numElements)
+void* string::operator new[] (size_t numElements)
 {
 	size_t memSz = (numElements + 1) * sizeof(string);  //array of string elements
 	void *pTemp = malloc(memSz);

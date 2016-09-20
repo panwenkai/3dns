@@ -157,7 +157,7 @@ void NucleateHeterogeneousLiquid(CELL &cellNew, CELL &cellOld, unsigned int node
 				break;
 
 			default:		//no other directions are considered
-				ErrorMsg("Illegal direction call in NucleateHeterogeneous");
+				ErrorMsg("Illegal direction call in NucleateHeterogeneousLiquid");
 		}; //endswitch
 	
 		SOL(DensityHetNucLiquid) = densityNuc;		//reset nucleation probability density
@@ -190,7 +190,7 @@ void NucleateHeterogeneousLiquid(CELL &cellNew, CELL &cellOld, unsigned int node
 
 //______________________________________________________
 //
-//	NucleateHeterogeneousLiquid
+//	NucleateHeterogeneousLiquidSurface
 //		Check if heterogeneous nucleation will occur in a
 //		liquid node with a neighbor from an ALIEN material class
 //______________________________________________________
@@ -407,7 +407,7 @@ void NucleateHomogeneousLiquid(CELL &cellNew, CELL &cellOld)
 				//_______________ DETERMINISTIC HOMOGENEOUS ____________________
 				else
 				{
-					A(DensityHomNuc) += densityNuc;		//increment nucleation density
+					A(DensityHomNucLiquid) += densityNuc;		//increment nucleation density
 
 					willNucleate = 	( A(DensityHomNucLiquid) > A(thresholdHomLiquid) );	//heterogeneous
 				}; //endif

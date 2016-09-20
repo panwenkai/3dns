@@ -152,7 +152,7 @@ void CheckNodeMeltSurface(CELL &cellNew, CELL &cellOld, int nodeA, int nodeB, in
 	*/
 	
 	// Temperally disable surface melting
-	// return;
+	return;
 	
 	double tSurf;	//extrapolated surface temperature
 	
@@ -814,8 +814,10 @@ void NeighborInteract(CELL &cellNew, CELL &cellOld, const int nodeA, const int n
 		switch (A(cellOld.cState) | B(cellOld.cState))		//see interaction table RA p.750
 		{
 			case (SOLID | SOLID):
-				if (A(cellOld.cPhaseSolid) == B(cellOld.cPhaseSolid))
+				if ((A(cellOld.cPhaseSolid) == B(cellOld.cPhaseSolid))&&(A(GrainIndex) == B(GrainIndex)))
 					return;						//exactly the same phase
+				// TODO: If they are exactly the same phase, we need to check whether they are of different grain.
+				// If they belong to different grains, then we just melt them if above melting temperature. 
 
 				tInterface = InterpolateT(nodeA, dirAtoB);	//interface temperature
 
@@ -1058,6 +1060,7 @@ void PhaseCleanup ()
     MatrixFree (TInterface);
     MatrixFree (State);
     MatrixFree (Velocity);
+	MatrixFree (GrainIndex);
 
 }; //endfunc
 
@@ -1106,6 +1109,7 @@ void PhaseInit ()
     MatrixNew (&CanChange);
     MatrixNew (&FractionSolid);
 	MatrixZero(MatrixNew(&GrainCode));
+	MatrixZero(MatrixNew(&GrainIndex));
 	MatrixNew (&IPos);
 	MatrixNew (&JPos);
 	MatrixNew (&KPos);
@@ -1280,6 +1284,28 @@ void PhaseInit ()
  					A(canInteract) |= FRONT;
 			};
 	
+	for (r=0; r<Geometry.numberRegions; r++)
+	{
+		typeMsg = (r < Geometry.jZones) ? "LAYER" : "OVERLAY";
+		typeVal = (r < Geometry.jZones) ? r : r - Geometry.jZones;
+	
+		for (i = 0; i < Region[r]->numberI; i++)
+		{
+			for (j = 0; j < Region[r]->numberJ; j++)
+			{
+				for (k = 0; k < Region[r]->numberK; k++)
+				{
+					nodeA = IJKToIndex(Region[r]->iLocations[i], 
+							Region[r]->jLocations[j], Region[r]->kLocations[k]);
+					
+					A(GrainIndex) = Region[r]->grainIndex;
+					
+				}; //endloop k
+			}; //endloop j
+		}; //endloop i
+
+	}; //endloop r
+
 	return;
 
 }; //endfunc

@@ -223,6 +223,52 @@ void LaserInit()
 	return;
 }; //endfunc
 
+//______________________________________________________
+//
+//	LaserMove
+//		Move the laser profile in X and Z direction
+//______________________________________________________
+void LaserMove()
+{
+	int i, k;
+	int numOffsets=0;	//number of offsets beyond simulation time
+	double egyX, egyZ;		//temporary energy values
+
+	Laser.egySpatial.Reset(I_LAST, K_LAST, 0); 
+	
+	for (i = I_FIRST; i < I_LAST; i++)			//construct 2D spatial density function
+	{
+		for (k = K_FIRST; k < K_LAST; k++)
+		{
+			
+			egyX = (Laser.dataSpatialX.dataType == T_UNKNOWN) ? 1.0 :
+				Laser.dataSpatialX.Evaluate(((Geometry.xMap[i] + 0.5 * DelX[i][J_FIRST][K_FIRST]) * CM_TO_M - Sim.sClock.curTime*Laser.velocityX),
+											((Geometry.zMap[k] + 0.5 * DelZ[I_FIRST][J_FIRST][k]) * CM_TO_M - Sim.sClock.curTime*Laser.velocityZ) );
+
+			egyZ = (Laser.dataSpatialZ.dataType == T_UNKNOWN) ? 1.0 :
+				Laser.dataSpatialZ.Evaluate((Geometry.zMap[k] + 0.5 * DelZ[I_FIRST][J_FIRST][k]) * CM_TO_M - Sim.sClock.curTime*Laser.velocityZ);
+
+			Laser.egySpatial[i][k] = egyX * egyZ;
+		}; //endloop k
+	}; //endloop i
+
+	if (!Normalize(Laser.egySpatial, 0, 1))		//peak value must be 1
+	{
+		WarningMsg("Cant normalize laser SPATIAL profile, so using 0 everywhere... ");
+		Laser.egySpatial.Reset(I_LAST, K_LAST, 0);
+	}
+
+	Floor(Laser.egySpatial, LASER_THRESHOLD, 0);	//drop values below LASER_THRESHOLD
+	
+	for (i = I_FIRST; i < I_LAST; i++)			//pre-calculate energy per node
+	{
+		for (k = K_FIRST; k < K_LAST; k++)
+		{
+			Laser.egySpatial[i][k] *= AreaXZ[i][J_FIRST][k];
+		}; //endloop k
+	}; //endloop i 
+}; //endfunc
+
 
 //______________________________________________________
 //
