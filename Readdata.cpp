@@ -823,9 +823,7 @@ void LoadParametersFile(string &datFileName)
         {
         	ParseLine(entry, T_BOOL, 1, NULL, NO_PATH);
 			entry.value.Load(&(Sim.modeStochastic));
-			int i = 1;
-			int j = 1;
-			Sim.modeStochastic = false;
+			
         }
 
 
@@ -873,13 +871,13 @@ void LoadParametersFile(string &datFileName)
 			LoadOverlayBlock(fInfo, entry, curRegion++);
 		}
 
-/*      else if( entry.keyWord == "PERIODIC_IJK" )
+        else if( entry.keyWord == "PERIODIC_IJK" )
         {
             ParseLine(entry, T_BOOL, 3, NULL, NO_PATH);
 			Geometry.modePeriodic = new bool[3];
 			entry.value.Load(&(Geometry.modePeriodic));
         }
-*/
+
 
 		else if( entry.keyWord == "REPORT_HISTORY" )
         {

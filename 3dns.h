@@ -45,9 +45,13 @@
 #define J_LAST      Geometry.jBound[Geometry.jZones]
 #define K_LAST		Geometry.kBound[Geometry.kZones]
 
-#define I_PERIODIC false
-#define J_PERIODIC false
-#define K_PERIODIC false
+//#define I_PERIODIC false
+//#define J_PERIODIC false
+//#define K_PERIODIC false
+
+#define I_PERIODIC Geometry.modePeriodic[0]
+#define J_PERIODIC Geometry.modePeriodic[1]
+#define K_PERIODIC Geometry.modePeriodic[2]
 
 #define LOOP_I	for(i=I_FIRST; i<I_LAST; i++)
 #define LOOP_J	for(j=J_FIRST; j<J_LAST; j++)
