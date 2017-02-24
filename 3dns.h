@@ -68,7 +68,7 @@
 #define MAX_JREGIONS 16		       //maximum vertical regions (layers)
 #define MAX_IREGIONS 16		       //maximum horizontal regions
 #define MAX_KREGIONS 16			   //maximum front-back regions
-#define MAX_REGIONS	 256		   //maximum total regions (including overlays)
+#define MAX_REGIONS	 20000		   //maximum total regions (including overlays)
 #define MIN_NODESIZE ((double)5E-7)	//minimum node size [cm]
 #define MAX_NODESIZE ((double)1.0001)    //maximum node size [cm]
 
@@ -257,8 +257,12 @@ typedef struct
 
 	int grainIndex;     //The index of the grain which this region belongs to
 						//Primarily used to identify grain boundaries
+	int layerIndex;     //The index of the layer which this region belongs to
+						//Primarily used to identify interface that can withstand certain degrees of over heating
 
 	bool canChange;		//can form liquid phase
+	bool isSurface;     //whether the region is surface layer (For different interface response function)
+	bool isInterface;   //whether the region is interface (Si/SiO2) layer (For different interface response function)
     bool catalyzeFreezing;	//true if it can catalyze freezing in neighboring regions
     bool catalyzeMelting;	//true if it can catalyze melting in neighboring regions
     bool canHetNucleate;
@@ -313,6 +317,11 @@ typedef struct			// Simulation environment
 	bool modeStochastic;	// true if stochastic effects are active
 	bool calcIntraNode;		// true if intra-node calculations were made
 	bool calcHeatFlow;		// true if heat-flow calculations were made
+
+	double surfaceSpeedCoe;    // Speed up the interface response function at the surface
+	double interfaceSpeedCoe;  // Speed up the interface response function at the Si/SiO2 interface
+
+	double interfaceSuperheating;
 
 	int dTnode;				// maximum temperature change
 	int dInode;				// maximum node change

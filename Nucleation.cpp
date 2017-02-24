@@ -85,6 +85,8 @@ void NucleateHeterogeneous(CELL &cellNew, CELL &cellOld, unsigned int nodeLiquid
 	
 			LIQ(DensityHetNuc) = densityNuc;		//reset nucleation probability density
 
+			//LIQ(DensityHetNuc) = 1 - exp(-densityNuc);
+
 			willNucleate = RandomCheck(LIQ(DensityHetNuc) * -1.0);
 		} //endif
 

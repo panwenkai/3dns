@@ -6,7 +6,7 @@
 // |   (C) 1998-99  Columbia University, MSME
 // |   (C) 2000-01	Harvard University, DEAS
 // |__________________________________________________________
-
+#include <iostream>
 #include "3dns.h"
 #include "parsefunc.h"
 #include "files.h"
@@ -470,6 +470,18 @@ void LoadOverlayBlock(FILEINFO &fInfo, ENTRY &entry, int regionNum)
 			entry.value.Load(&(thisRegion->canChange) );
         }
 
+		else if( entry.keyWord == "OVERLAY_IS_SURFACE" )
+        {
+            ParseLine(entry, T_BOOL, 1, NULL, NO_PATH);
+			entry.value.Load(&(thisRegion->isSurface) );
+        }
+
+		else if( entry.keyWord == "OVERLAY_IS_INTERFACE" )
+        {
+            ParseLine(entry, T_BOOL, 1, NULL, NO_PATH);
+			entry.value.Load(&(thisRegion->isInterface) );
+        }
+
       	else if( entry.keyWord == "OVERLAY_CATALYZE_FREEZING" )
         {
             ParseLine(entry, T_BOOL, 1, NULL, NO_PATH);
@@ -486,6 +498,12 @@ void LoadOverlayBlock(FILEINFO &fInfo, ENTRY &entry, int regionNum)
 		{
             ParseLine(entry, T_INT, 1, VAL_POSITIVE , NO_PATH);
 			entry.value.Load(&(thisRegion->grainIndex) );
+        }
+
+		else if( entry.keyWord == "OVERLAY_LAYER_INDEX" )
+		{
+            ParseLine(entry, T_INT, 1, VAL_POSITIVE , NO_PATH);
+			entry.value.Load(&(thisRegion->layerIndex) );
         }
 
       	else if( entry.keyWord == "OVERLAY_HET_THRESHOLD" )
@@ -647,6 +665,36 @@ void LoadParametersFile(string &datFileName)
 			delete [] temp;
         }
 
+		else if( entry.keyWord == "LAYER_IS_SURFACE" )
+        {
+			bool *temp;
+			ParseLine(entry, T_BOOL, &(Geometry.jZones), NULL, NO_PATH);
+			entry.value.Load(&temp);
+			
+			for (r = LAYER_FIRST; r < LAYER_LAST; r++)	//distribute info to regions
+			{
+				thisRegion = RegionNew(r);
+				thisRegion->isSurface = temp[r]; 
+			} //endloop 
+			
+			delete [] temp;
+        }
+
+		else if( entry.keyWord == "LAYER_IS_INTERFACE" )
+        {
+			bool *temp;
+			ParseLine(entry, T_BOOL, &(Geometry.jZones), NULL, NO_PATH);
+			entry.value.Load(&temp);
+			
+			for (r = LAYER_FIRST; r < LAYER_LAST; r++)	//distribute info to regions
+			{
+				thisRegion = RegionNew(r);
+				thisRegion->isInterface = temp[r]; 
+			} //endloop 
+			
+			delete [] temp;
+        }
+
       	else if( entry.keyWord == "LAYER_CATALYZE_FREEZING" )
         {
             bool *temp;
@@ -687,6 +735,21 @@ void LoadParametersFile(string &datFileName)
 			{
 				thisRegion = RegionNew(r);
 				thisRegion->grainIndex = temp[r]; 
+			} //endloop 
+			
+			delete [] temp;
+        }
+
+		else if( entry.keyWord == "LAYER_LAYER_INDEX" )
+        {
+            int *temp;
+            ParseLine(entry, T_INT, &(LAYER_LAST), NULL, NO_PATH);
+			entry.value.Load(&temp);
+
+			for (r = LAYER_FIRST; r < LAYER_LAST; r++)	//distribute info to regions
+			{
+				thisRegion = RegionNew(r);
+				thisRegion->layerIndex = temp[r]; 
 			} //endloop 
 			
 			delete [] temp;
@@ -931,6 +994,30 @@ void LoadParametersFile(string &datFileName)
 		{	
 			ParseLine(entry, T_INT, 1, VAL_POSITIVE | VAL_FLAG_ALL, NO_PATH);
 			entry.value.Load(&(Sim.seedStochastic));
+		}
+
+		else if( entry.keyWord == "SURFACE_SPEED" )
+		{	
+			ParseLine(entry, T_FLOAT, 1, VAL_POSITIVE , NO_PATH);
+			entry.value.Load(&(Sim.surfaceSpeedCoe));
+			//std::cout << "Recognized!!" << std::endl;
+			//std::cout << Sim.surfaceSpeedCoe << std::endl;
+		}
+
+		else if( entry.keyWord == "INTERFACE_SPEED" )
+		{	
+			ParseLine(entry, T_FLOAT, 1, VAL_POSITIVE , NO_PATH);
+			entry.value.Load(&(Sim.interfaceSpeedCoe));
+			//std::cout << "Recognized!!" << std::endl;
+			//std::cout << (Sim.interfaceSpeedCoe) << std::endl;
+		}
+
+		else if( entry.keyWord == "INTERFACE_SUPERHEATING" )
+		{	
+			ParseLine(entry, T_FLOAT, 1, VAL_POSITIVE , NO_PATH);
+			entry.value.Load(&(Sim.interfaceSuperheating));
+			//std::cout << "Recognized!!" << std::endl;
+			//std::cout << (Sim.interfaceSpeedCoe) << std::endl;
 		}
 
       	else if( entry.keyWord == "SIZE_I" )

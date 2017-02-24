@@ -123,6 +123,13 @@ void CheckNodeMeltAlien(CELL &cellNew, CELL &cellOld, const int nodeSolid, const
 		OTHER(Velocity) = 0.0;
 	};
 	
+	if ((OTHER(LayerIndex) != SOL(LayerIndex)) && (tInterface > (TMelt(cellOld.cPhaseSolid, nodeSolid)+Sim.interfaceSuperheating)))
+	{
+		NodeMelt(cellNew, cellOld, nodeSolid, dirSolToLiq | SURFACEMELT, tInterface, 0.0);
+		OTHER(Velocity) = 0.0;
+	}
+
+
 	return;
 }; //endfunc
 
@@ -699,6 +706,16 @@ double MotionNode(CELL &cellNew, CELL &cellOld, const int i, const int j, const 
 
 		case (0x100):
 			posOld = A(IPos);
+
+			// Modify the interface velocity at surface or interface
+			if (A(IsInterface)) {
+				A(Velocity) = A(Velocity) * Sim.interfaceSpeedCoe;
+			}
+
+			if (A(IsSurface)) {
+				A(Velocity) = A(Velocity) * Sim.surfaceSpeedCoe;
+			}
+
 			posNew = posOld + (Sim.sClock.curDTime + A(cellOld.cTimeX)) * A(Velocity) * ICOMP / DX;
 			A(cellNew.cFraction) = Fraction100(posNew, ICOMP, isComplete);
 			break;
@@ -711,6 +728,16 @@ double MotionNode(CELL &cellNew, CELL &cellOld, const int i, const int j, const 
 
 		case (0x001):
 			posOld = A(KPos);
+
+			// Modify the interface velocity at surface or interface
+			if (A(IsInterface)) {
+				A(Velocity) = A(Velocity) * Sim.interfaceSpeedCoe;
+			}
+
+			if (A(IsSurface)) {
+				A(Velocity) = A(Velocity) * Sim.surfaceSpeedCoe;
+			}
+
 			posNew = posOld + (Sim.sClock.curDTime + A(cellOld.cTimeX)) * A(Velocity) * KCOMP / DZ;
 			A(cellNew.cFraction) = Fraction100(posNew, KCOMP, isComplete);
 			break;
@@ -727,6 +754,15 @@ double MotionNode(CELL &cellNew, CELL &cellOld, const int i, const int j, const 
 
 		case (0x101):
 			posOld = A(IPos);
+
+			// Modify the interface velocity at surface or interface
+			if (A(IsInterface)) {
+				A(Velocity) = A(Velocity) * Sim.interfaceSpeedCoe;
+			}
+
+			if (A(IsSurface)) {
+				A(Velocity) = A(Velocity) * Sim.surfaceSpeedCoe;
+			}
 
 			delPos = (Sim.sClock.curDTime + A(cellOld.cTimeX)) * A(Velocity) * ISO_VELOCITY_110 * A(DelXZ) / 
 				(2 * A(AreaXZ));
@@ -814,7 +850,9 @@ void NeighborInteract(CELL &cellNew, CELL &cellOld, const int nodeA, const int n
 		switch (A(cellOld.cState) | B(cellOld.cState))		//see interaction table RA p.750
 		{
 			case (SOLID | SOLID):
-				if ((A(cellOld.cPhaseSolid) == B(cellOld.cPhaseSolid))&&(A(GrainIndex) == B(GrainIndex)))
+				//if ((A(cellOld.cPhaseSolid) == B(cellOld.cPhaseSolid))&&(A(GrainIndex) == B(GrainIndex))) // Two ways of melting initiation
+																										  // Different phase or different grain index
+				if (A(GrainIndex) == B(GrainIndex)) // Onlt different grain index can initiate melting
 					return;						//exactly the same phase
 				// TODO: If they are exactly the same phase, we need to check whether they are of different grain.
 				// If they belong to different grains, then we just melt them if above melting temperature. 
@@ -1051,6 +1089,8 @@ void PhaseCleanup ()
 {
     MatrixFree (canInteract);
 	MatrixFree (CanChange);
+	MatrixFree (IsSurface);
+	MatrixFree (IsInterface);
     MatrixFree (FractionSolid);
     MatrixFree (PhaseCodeSolid);
 	MatrixFree (PhaseCodeLiquid);
@@ -1107,6 +1147,8 @@ void PhaseInit ()
 	Sim.numberSolid = 0;
 
     MatrixNew (&CanChange);
+	MatrixNew (&IsSurface);
+	MatrixNew (&IsInterface);
     MatrixNew (&FractionSolid);
 	MatrixZero(MatrixNew(&GrainCode));
 	MatrixZero(MatrixNew(&GrainIndex));
@@ -1222,6 +1264,8 @@ void PhaseInit ()
 							Region[r]->jLocations[j], Region[r]->kLocations[k]);
 
 					A(CanChange) = Region[r]->canChange;
+					A(IsInterface) = Region[r]->isInterface;
+					A(IsSurface) = Region[r]->isSurface;
 					A(CatalyzeFreezing) = Region[r]->catalyzeFreezing;
 					A(CatalyzeMelting) = Region[r]->catalyzeMelting;
 					A(MaterialClass) = Phase[Region[r]->phaseStart]->matlClass;
