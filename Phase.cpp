@@ -123,6 +123,8 @@ void CheckNodeMeltAlien(CELL &cellNew, CELL &cellOld, const int nodeSolid, const
 		OTHER(Velocity) = 0.0;
 	};
 	
+
+	//This is added to initiate melting at a certain degree of superheating
 	if ((OTHER(LayerIndex) != SOL(LayerIndex)) && (tInterface > (TMelt(cellOld.cPhaseSolid, nodeSolid)+Sim.interfaceSuperheating)))
 	{
 		NodeMelt(cellNew, cellOld, nodeSolid, dirSolToLiq | SURFACEMELT, tInterface, 0.0);
@@ -1101,6 +1103,7 @@ void PhaseCleanup ()
     MatrixFree (State);
     MatrixFree (Velocity);
 	MatrixFree (GrainIndex);
+	MatrixFree (LayerIndex);
 
 }; //endfunc
 
@@ -1152,6 +1155,7 @@ void PhaseInit ()
     MatrixNew (&FractionSolid);
 	MatrixZero(MatrixNew(&GrainCode));
 	MatrixZero(MatrixNew(&GrainIndex));
+	MatrixZero(MatrixNew(&LayerIndex));
 	MatrixNew (&IPos);
 	MatrixNew (&JPos);
 	MatrixNew (&KPos);
@@ -1343,7 +1347,7 @@ void PhaseInit ()
 							Region[r]->jLocations[j], Region[r]->kLocations[k]);
 					
 					A(GrainIndex) = Region[r]->grainIndex;
-					
+					A(LayerIndex) = Region[r]->layerIndex;
 				}; //endloop k
 			}; //endloop j
 		}; //endloop i
